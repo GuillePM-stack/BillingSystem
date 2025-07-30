@@ -10,6 +10,15 @@ const connection = mysql.createPool({
   database: "Billing",
 });
 
+const validatePersonalData = (data: newPersonal | Personal) => {
+  const validation = personalSchema.safeParse(data);
+  if (!validation.success) {
+    throw validation.error;
+  }
+
+  return validation.data;
+};
+
 //Function to get all personal records
 export const getAllPersonal = async () => {
   try {
@@ -36,14 +45,16 @@ export const findPersonal = async (id: number) => {
 
 export const createPersonal = async (newP: newPersonal) => {
   try {
-    const validation = personalSchema.safeParse(newP);
-    if (!validation.success) {
-      return { error: validation.error };
-    }
+    const validatedData = validatePersonalData(newP);
 
     const [results] = await connection.query(
       "INSERT INTO PERSONAL (nombre, direccion, telefono, estatus) VALUES(?, ?, ?, ?)",
-      [newP.nombre, newP.direccion, newP.telefono, newP.estatus]
+      [
+        validatedData.nombre,
+        validatedData.direccion,
+        validatedData.telefono,
+        validatedData.estatus,
+      ]
     );
     return results;
   } catch (error) {
@@ -51,24 +62,20 @@ export const createPersonal = async (newP: newPersonal) => {
   }
 };
 
-export const updatePersonal = async (newPersonal: Personal) => {
+export const updatePersonal = async (updatePersonal: Personal) => {
   try {
-
-    const validation = personalSchema.safeParse(newPersonal);
-    if (!validation.success) {
-      return { error: validation.error };
-    }
+    const validatedData = validatePersonalData(updatePersonal);
 
     const [results] = await connection.query(
       `UPDATE PERSONAL 
       SET nombre = ?, direccion = ?, telefono = ?, estatus = ?
       WHERE id = ?`,
       [
-        newPersonal.nombre,
-        newPersonal.direccion,
-        newPersonal.telefono,
-        newPersonal.estatus,
-        newPersonal.id,
+        validatedData.nombre,
+        validatedData.direccion,
+        validatedData.telefono,
+        validatedData.estatus,
+        validatedData.id,
       ]
     );
     return results;

@@ -3,6 +3,7 @@ import { z } from "zod";
 //Validations with zod - creating a schema
 export const personalSchema = z
   .object({
+    id: z.number().int(),
     nombre: z
       .string()
       .min(2, "Mínimo 2 caracteres")
